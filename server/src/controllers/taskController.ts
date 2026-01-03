@@ -31,7 +31,7 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
             data: {
                 ...body,
                 creatorId: req.user!.id,
-                status: 'TODO', // Default status
+                // status field is now in body or defaults via Zod
             },
         });
 
