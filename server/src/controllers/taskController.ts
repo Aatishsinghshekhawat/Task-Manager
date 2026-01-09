@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
 import { createTaskSchema, updateTaskSchema } from '../dtos/task.dto';
+import { getIO } from '../socket';
 
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -34,6 +35,12 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
                 // status field is now in body or defaults via Zod
             },
         });
+
+        try {
+            getIO().emit('task:created', task);
+        } catch (e) {
+            console.error('Socket emit failed', e);
+        }
 
         res.status(201).json(task);
     } catch (error: any) {
@@ -69,7 +76,12 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
             data: body,
         });
 
-        // TODO: Emit socket event here
+        try {
+            getIO().emit('task:updated', updatedTask);
+        } catch (e) {
+            console.error('Socket emit failed', e);
+        }
+
         res.json(updatedTask);
     } catch (error: any) {
         if (error.name === 'ZodError') {
@@ -96,6 +108,13 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
         }
 
         await prisma.task.delete({ where: { id } });
+
+        try {
+            getIO().emit('task:deleted', { id });
+        } catch (e) {
+            console.error('Socket emit failed', e);
+        }
+
         res.json({ message: 'Task deleted' });
     } catch (error) {
         res.status(500).json({ message: 'Server error deleting task' });

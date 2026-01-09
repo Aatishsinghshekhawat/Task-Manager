@@ -1,41 +1,39 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Layout from '../components/Layout';
 import TaskCard from '../components/TaskCard';
 import CreateTaskModal from '../components/CreateTaskModal';
 import { CheckCircle2, Clock, ListTodo, Plus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSocket } from '../hooks/useSocket';
 
 export default function Dashboard() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const [tasks, setTasks] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
+    const queryClient = useQueryClient();
 
-    const fetchTasks = async () => {
-        try {
+    // Enable Real-time updates
+    useSocket();
+
+    // Fetch Tasks using React Query
+    const { data: tasks = [], isLoading: tasksLoading } = useQuery({
+        queryKey: ['tasks'],
+        queryFn: async () => {
             const { data } = await api.get('/tasks');
-            setTasks(data);
-        } catch (error) {
-            console.error('Failed to fetch tasks', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+            return data;
+        },
+        enabled: !!user,
+    });
 
     useEffect(() => {
-        if (authLoading) return;
-
-        if (!user) {
+        if (!authLoading && !user) {
             router.push('/login');
-            return;
         }
-
-        fetchTasks();
     }, [user, authLoading, router]);
 
     const handleCreateTask = () => {
@@ -48,17 +46,23 @@ export default function Dashboard() {
         setIsModalOpen(true);
     };
 
-    const handleDeleteTask = async (taskId: string) => {
-        if (!confirm('Are you sure you want to delete this task?')) return;
-
-        try {
+    // Delete Mutation
+    const deleteMutation = useMutation({
+        mutationFn: async (taskId: string) => {
             await api.delete(`/tasks/${taskId}`);
-            // Optimistic update or refetch
-            setTasks(prev => prev.filter((t: any) => t.id !== taskId));
-        } catch (error) {
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        },
+        onError: (error) => {
             console.error('Failed to delete task', error);
             alert('Failed to delete task');
         }
+    });
+
+    const handleDeleteTask = async (taskId: string) => {
+        if (!confirm('Are you sure you want to delete this task?')) return;
+        deleteMutation.mutate(taskId);
     };
 
     // Calculate stats
@@ -74,7 +78,7 @@ export default function Dashboard() {
 
     const recentTasks = tasks.slice(0, 6); // Show top 6
 
-    if (authLoading || loading) {
+    if (authLoading || tasksLoading) {
         return (
             <Layout>
                 <div className="flex h-96 items-center justify-center">
@@ -140,6 +144,7 @@ export default function Dashboard() {
                                     status={task.status}
                                     priority={task.priority}
                                     dueDate={task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Date'}
+                                    assigneeName={task.assignee?.name}
                                     onEdit={() => handleEditTask(task)}
                                     onDelete={() => handleDeleteTask(task.id)}
                                 />

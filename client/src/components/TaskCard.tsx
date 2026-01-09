@@ -5,16 +5,17 @@ interface TaskCardProps {
     status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'COMPLETED';
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     dueDate?: string;
+    assigneeName?: string;
     onEdit: () => void;
     onDelete: () => void;
 }
 
-export default function TaskCard({ title, status, priority, dueDate, onEdit, onDelete }: TaskCardProps) {
+export default function TaskCard({ title, status, priority, dueDate, assigneeName, onEdit, onDelete }: TaskCardProps) {
     const statusColors = {
         TODO: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
         IN_PROGRESS: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
         DONE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-        COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', // Handle new status
+        COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     };
 
     const displayStatus = status === 'COMPLETED' ? 'DONE' : status;
@@ -23,7 +24,7 @@ export default function TaskCard({ title, status, priority, dueDate, onEdit, onD
         LOW: 'text-zinc-500',
         MEDIUM: 'text-orange-500',
         HIGH: 'text-red-500',
-        URGENT: 'text-purple-500', // Handle URGENT
+        URGENT: 'text-purple-500',
     };
 
     return (
@@ -36,6 +37,12 @@ export default function TaskCard({ title, status, priority, dueDate, onEdit, onD
                     {status.replace('_', ' ')}
                 </span>
             </div>
+
+            {assigneeName && (
+                <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    Assigned to: <span className="font-medium text-zinc-700 dark:text-zinc-300">{assigneeName}</span>
+                </div>
+            )}
 
             <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                 <div className="flex items-center gap-2">

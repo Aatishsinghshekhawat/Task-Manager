@@ -6,11 +6,14 @@ import morgan from 'morgan';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
 import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
+import { initSocket } from './socket';
 
 // Load env vars
 dotenv.config();
 
 const app: Express = express();
+const httpServer = createServer(app);
 const port = process.env.PORT || 3000;
 
 // Middleware
@@ -23,6 +26,9 @@ app.use(cors({
 app.use(helmet());
 app.use(morgan('dev'));
 
+// Initialize Socket.io
+initSocket(httpServer);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
@@ -34,8 +40,9 @@ app.get('/', (req: Request, res: Response) => {
 
 // Start Server
 if (require.main === module) {
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
         console.log(`[server]: Server is running at http://localhost:${port}`);
+        console.log('[server]: Socket.io initialized');
     });
 }
 

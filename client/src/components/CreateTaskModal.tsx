@@ -25,7 +25,24 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
     const [priority, setPriority] = useState('MEDIUM');
     const [status, setStatus] = useState('TODO');
     const [dueDate, setDueDate] = useState('');
+    const [assignedToId, setAssignedToId] = useState('');
+    const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
     const queryClient = useQueryClient();
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const { data } = await api.get('/auth/users');
+                setUsers(data);
+            } catch (error) {
+                console.error('Failed to fetch users', error);
+            }
+        };
+
+        if (isOpen) {
+            fetchUsers();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (taskToEdit) {
@@ -34,6 +51,8 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
             setPriority(taskToEdit.priority);
             setStatus(taskToEdit.status);
             setDueDate(taskToEdit.dueDate ? new Date(taskToEdit.dueDate).toISOString().split('T')[0] : '');
+            // @ts-ignore
+            setAssignedToId(taskToEdit.assignedToId || '');
         } else {
             // Reset for create mode
             setTitle('');
@@ -41,6 +60,7 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
             setPriority('MEDIUM');
             setStatus('TODO');
             setDueDate('');
+            setAssignedToId('');
         }
     }, [taskToEdit, isOpen]);
 
@@ -76,6 +96,7 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
             priority,
             status,
             dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+            assignedToId: assignedToId || undefined, // Send undefined if empty to avoid DB errors constraint
         };
 
         mutation.mutate(taskData);
@@ -153,6 +174,24 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
                                 <option value="COMPLETED">Completed</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Assign To
+                        </label>
+                        <select
+                            value={assignedToId}
+                            onChange={(e) => setAssignedToId(e.target.value)}
+                            className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        >
+                            <option value="">Unassigned</option>
+                            {users.map((user) => (
+                                <option key={user.id} value={user.id}>
+                                    {user.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div>

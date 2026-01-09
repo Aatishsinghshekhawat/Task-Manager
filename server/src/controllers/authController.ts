@@ -7,9 +7,10 @@ import { registerSchema, loginSchema, RegisterInput, LoginInput } from '../dtos/
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const body: RegisterInput = registerSchema.parse(req.body); // Validate input
+        const email = body.email.toLowerCase(); // Normalize email
 
         const existingUser = await prisma.user.findUnique({
-            where: { email: body.email },
+            where: { email },
         });
 
         if (existingUser) {
@@ -22,7 +23,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const user = await prisma.user.create({
             data: {
                 name: body.name,
-                email: body.email,
+                email: email,
                 password: hashedPassword,
             },
         });
@@ -33,7 +34,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         res.cookie('jwt', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         });
 
@@ -55,9 +56,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const body: LoginInput = loginSchema.parse(req.body);
+        const email = body.email.toLowerCase();
 
         const user = await prisma.user.findUnique({
-            where: { email: body.email },
+            where: { email },
         });
 
         if (!user) {
@@ -77,7 +79,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         res.cookie('jwt', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         });
 
@@ -131,5 +133,21 @@ export const getMe = async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+export const getUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+            },
+            orderBy: { name: 'asc' },
+        });
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching users' });
     }
 };

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import api from '../utils/api';
 import Head from 'next/head';
+import { useAuth } from '../context/AuthContext';
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -16,6 +17,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
     const router = useRouter();
+    const { login } = useAuth();
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -31,8 +33,10 @@ export default function Login() {
         setIsLoading(true);
         setError('');
         try {
-            await api.post('/auth/login', data);
-            router.push('/dashboard');
+            const res = await api.post('/auth/login', data);
+            // Pass empty string for token as it's handled via httpOnly cookie, 
+            // but the context function signature expects it.
+            login('', res.data);
         } catch (err: any) {
             setError(err.response?.data?.message || 'Invalid credentials');
         } finally {

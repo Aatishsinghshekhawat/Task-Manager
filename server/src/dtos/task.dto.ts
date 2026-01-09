@@ -7,6 +7,7 @@ export const createTaskSchema = z.object({
     dueDate: z.string().nullable().optional().transform((str) => (str ? new Date(str) : null)),
     priority: z.nativeEnum(Priority).default(Priority.MEDIUM),
     status: z.nativeEnum(Status).default(Status.TODO),
+    assignedToId: z.string().optional(),
 });
 
 export const updateTaskSchema = z.object({
