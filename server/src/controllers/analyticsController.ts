@@ -73,7 +73,7 @@ export const getChartData = async (req: Request, res: Response): Promise<void> =
             }
         });
 
-        const priorityData = tasksByPriority.map(item => ({
+        const priorityData = tasksByPriority.map((item: { priority: string, _count: { priority: number } }) => ({
             name: item.priority,
             value: item._count.priority
         }));

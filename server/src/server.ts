@@ -22,7 +22,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: 'http://localhost:5173', // Frontend URL
+    origin: process.env.CLIENT_URL || 'http://localhost:5173', // Fallback for dev
     credentials: true
 }));
 app.use(helmet());
