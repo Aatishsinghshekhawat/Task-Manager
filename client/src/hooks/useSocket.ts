@@ -8,7 +8,8 @@ export const useSocket = () => {
 
     useEffect(() => {
         // Initialize socket
-        const newSocket = io('http://localhost:3000', {
+        const socketUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3000';
+        const newSocket = io(socketUrl, {
             withCredentials: true,
         });
 

@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { initSocket } from './socket';
@@ -34,6 +35,7 @@ initSocket(httpServer);
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

@@ -39,6 +39,16 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
             }
         });
 
+        // Log activity: Task Created
+        await prisma.activityLog.create({
+            data: {
+                taskId: task.id,
+                userId: req.user!.id,
+                type: 'TASK_CREATED',
+                description: `Task "${task.title}" was created`
+            }
+        });
+
         // Create notification if task is assigned to someone
         if (task.assignedToId && task.assignedToId !== req.user!.id) {
             const notification = await prisma.notification.create({
@@ -110,6 +120,58 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
                 assignee: { select: { id: true, name: true } }
             }
         });
+
+        // Log activities
+        const activities = [];
+
+        if (body.status && body.status !== task.status) {
+            activities.push(prisma.activityLog.create({
+                data: {
+                    taskId: id,
+                    userId: req.user!.id,
+                    type: 'STATUS_UPDATED',
+                    description: `Status changed from ${task.status} to ${body.status}`
+                }
+            }));
+        }
+
+        if (body.priority && body.priority !== task.priority) {
+            activities.push(prisma.activityLog.create({
+                data: {
+                    taskId: id,
+                    userId: req.user!.id,
+                    type: 'PRIORITY_UPDATED',
+                    description: `Priority changed from ${task.priority} to ${body.priority}`
+                }
+            }));
+        }
+
+        if (body.assignedToId && body.assignedToId !== task.assignedToId) {
+            const assigneeName = updatedTask.assignee?.name || 'Unassigned';
+            activities.push(prisma.activityLog.create({
+                data: {
+                    taskId: id,
+                    userId: req.user!.id,
+                    type: 'ASSIGNEE_CHANGED',
+                    description: `Task assigned to ${assigneeName}`
+                }
+            }));
+        }
+
+        if (body.dueDate && (!task.dueDate || new Date(body.dueDate).getTime() !== new Date(task.dueDate).getTime())) {
+            activities.push(prisma.activityLog.create({
+                data: {
+                    taskId: id,
+                    userId: req.user!.id,
+                    type: 'DUE_DATE_UPDATED',
+                    description: `Due date updated to ${new Date(body.dueDate).toLocaleDateString()}`
+                }
+            }));
+        }
+
+        if (activities.length > 0) {
+            await Promise.all(activities);
+        }
 
         // Create notification if assignee changed and is different from updater
         if (body.assignedToId && body.assignedToId !== task.assignedToId && body.assignedToId !== req.user!.id) {

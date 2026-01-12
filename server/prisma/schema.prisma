@@ -31,6 +31,7 @@ model User {
   createdTasks  Task[]         @relation("TaskCreator")
   assignedTasks Task[]         @relation("TaskAssignee")
   notifications Notification[]
+  activityLogs  ActivityLog[]
 }
 
 model Task {
@@ -51,6 +52,7 @@ model Task {
   updatedAt DateTime @updatedAt
 
   notifications Notification[]
+  activityLogs  ActivityLog[]
 }
 
 model Notification {
@@ -67,4 +69,26 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+}
+
+model ActivityLog {
+  id          String       @id @default(uuid())
+  taskId      String
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ActivityType
+  description String       @db.Text
+  createdAt   DateTime     @default(now())
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+enum ActivityType {
+  TASK_CREATED
+  STATUS_UPDATED
+  ASSIGNEE_CHANGED
+  DUE_DATE_UPDATED
+  PRIORITY_UPDATED
 }

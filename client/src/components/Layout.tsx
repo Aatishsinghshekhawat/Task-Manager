@@ -8,7 +8,8 @@ import {
     Menu,
     X,
     User,
-    Plus
+    Plus,
+    BarChart3
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -34,6 +35,7 @@ export default function Layout({ children }: LayoutProps) {
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'My Tasks', href: '/tasks', icon: ListTodo },
+        { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     ];
 
     const handleLogout = () => {
@@ -41,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 flex">
+        <div className="h-screen overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 flex">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
