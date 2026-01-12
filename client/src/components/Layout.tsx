@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import {
     LayoutDashboard,
     ListTodo,
-    Settings,
     LogOut,
     Menu,
     X,
@@ -13,6 +12,9 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAuth } from '../context/AuthContext';
+import CreateTaskModal from './CreateTaskModal';
+import NotificationBell from './NotificationBell';
 
 interface LayoutProps {
     children: ReactNode;
@@ -20,7 +22,9 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
     const router = useRouter();
+    const { user, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
     // Helper to merge generic tailwind classes
     const cn = (...inputs: (string | undefined | null | false)[]) => {
@@ -30,12 +34,10 @@ export default function Layout({ children }: LayoutProps) {
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'My Tasks', href: '/tasks', icon: ListTodo },
-        { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
     const handleLogout = () => {
-        // TODO: Implement actual logout logic
-        router.push('/login');
+        logout();
     };
 
     return (
@@ -79,8 +81,8 @@ export default function Layout({ children }: LayoutProps) {
                                 <User size={16} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">User Name</p>
-                                <p className="text-xs text-zinc-500 truncate">user@example.com</p>
+                                <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+                                <p className="text-xs text-zinc-500 truncate">{user?.email || 'user@example.com'}</p>
                             </div>
                         </div>
                     </div>
@@ -111,6 +113,7 @@ export default function Layout({ children }: LayoutProps) {
                     {/* Bottom Actions */}
                     <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
                         <button
+                            onClick={() => setIsTaskModalOpen(true)}
                             className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                         >
                             <Plus size={16} />
@@ -129,15 +132,20 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Mobile Header */}
-                <header className="lg:hidden flex items-center justify-between h-16 px-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                    <div className="font-bold text-lg">TaskFlow</div>
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    >
-                        <Menu size={20} />
-                    </button>
+                {/* Desktop/Mobile Shared Header Actions */}
+                <header className="flex items-center justify-between lg:justify-end h-16 px-4 md:px-8 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                    <div className="lg:hidden font-bold text-lg">TaskFlow</div>
+
+                    <div className="flex items-center gap-2">
+                        <NotificationBell />
+
+                        <button
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="lg:hidden p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <Menu size={20} />
+                        </button>
+                    </div>
                 </header>
 
                 {/* Page Content */}
@@ -147,6 +155,12 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                 </div>
             </main>
+
+            {/* Task Creation Modal */}
+            <CreateTaskModal
+                isOpen={isTaskModalOpen}
+                onClose={() => setIsTaskModalOpen(false)}
+            />
         </div>
     );
 }

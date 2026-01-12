@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { initSocket } from './socket';
@@ -32,6 +33,7 @@ initSocket(httpServer);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import prisma from '../config/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
@@ -7,7 +8,7 @@ interface JwtPayload {
     userId: string;
 }
 
-export const protect = (req: Request, res: Response, next: NextFunction): void => {
+export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let token;
 
     // Check for token in cookies
@@ -22,7 +23,19 @@ export const protect = (req: Request, res: Response, next: NextFunction): void =
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-        req.user = { id: decoded.userId };
+
+        // Fetch user from database to get name and email
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true, name: true, email: true }
+        });
+
+        if (!user) {
+            res.status(401).json({ message: 'User not found' });
+            return;
+        }
+
+        req.user = user;
         next();
     } catch (error) {
         console.error('Token verification failed:', error);

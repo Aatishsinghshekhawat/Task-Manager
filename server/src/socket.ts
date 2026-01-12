@@ -17,6 +17,11 @@ export const initSocket = (httpServer: HttpServer) => {
     io.on('connection', (socket: Socket) => {
         console.log('Client connected:', socket.id);
 
+        socket.on('join', (userId: string) => {
+            socket.join(userId);
+            console.log(`User ${userId} joined their private room`);
+        });
+
         socket.on('disconnect', () => {
             console.log('Client disconnected:', socket.id);
         });

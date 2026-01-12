@@ -1,8 +1,34 @@
 import Head from 'next/head';
 import Link from 'next/link';
-
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If user is authenticated, redirect to dashboard
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+        <div className="text-xl text-zinc-500">Loading...</div>
+      </div>
+    );
+  }
+
+  // Only show home page if user is not authenticated
+  if (user) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 font-sans selection:bg-blue-500/30">
       <Head>
@@ -29,9 +55,9 @@ export default function Home() {
             <Link href="/register" className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all shadow-lg hover:shadow-blue-500/25">
               Get Started
             </Link>
-            <button className="px-8 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-full font-semibold transition-all">
-              Learn More
-            </button>
+            <Link href="/login" className="px-8 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-full font-semibold transition-all">
+              Sign In
+            </Link>
           </div>
         </div>
       </main>

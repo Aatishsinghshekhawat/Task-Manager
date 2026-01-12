@@ -10,7 +10,7 @@ import { CheckCircle2, Clock, ListTodo, Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSocket } from '../hooks/useSocket';
 
-export default function Dashboard() {
+export default function MyTasks() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,9 +68,12 @@ export default function Dashboard() {
         deleteMutation.mutate(taskId);
     };
 
+    // Filter tasks assigned to current user
+    const myTasks = tasks.filter((task: any) => task.assignedToId === user?.id);
+
     // Filter and Sort Logic
     const getFilteredAndSortedTasks = () => {
-        let filtered = [...tasks];
+        let filtered = [...myTasks];
 
         // Apply status filter
         if (statusFilter !== 'ALL') {
@@ -102,18 +105,16 @@ export default function Dashboard() {
 
     const filteredTasks = getFilteredAndSortedTasks();
 
-    // Calculate stats (use all tasks, not filtered)
-    const totalTasks = tasks.length;
-    const pendingTasks = tasks.filter((t: any) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length;
-    const completedTasks = tasks.filter((t: any) => t.status === 'COMPLETED').length;
+    // Calculate stats (use myTasks, not all tasks)
+    const totalTasks = myTasks.length;
+    const pendingTasks = myTasks.filter((t: any) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length;
+    const completedTasks = myTasks.filter((t: any) => t.status === 'COMPLETED').length;
 
     const stats = [
-        { label: 'Total Tasks', value: totalTasks, icon: ListTodo, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/20' },
+        { label: 'My Tasks', value: totalTasks, icon: ListTodo, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/20' },
         { label: 'Pending', value: pendingTasks, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/20' },
         { label: 'Completed', value: completedTasks, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/20' },
     ];
-
-    const recentTasks = filteredTasks.slice(0, 6); // Show top 6 from filtered results
 
     const hasActiveFilters = statusFilter !== 'ALL' || priorityFilter !== 'ALL' || sortBy !== 'NONE';
 
@@ -136,15 +137,15 @@ export default function Dashboard() {
     return (
         <Layout>
             <Head>
-                <title>Dashboard - Task Manager</title>
+                <title>My Tasks - Task Manager</title>
             </Head>
 
             <div className="space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Welcome back, {user?.name}!</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400">Here's what's happening with your projects today.</p>
+                        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">My Tasks</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400">Tasks assigned to you</p>
                     </div>
                     <button
                         onClick={handleCreateTask}
@@ -245,19 +246,20 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Recent Tasks */}
+                {/* Tasks List */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Recent Tasks</h2>
-                        <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline">
-                            View All
-                        </button>
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">All My Tasks</h2>
                     </div>
-                    {recentTasks.length === 0 ? (
-                        <div className="text-center py-10 text-zinc-500">No tasks found. Create one to get started!</div>
+                    {filteredTasks.length === 0 ? (
+                        <div className="text-center py-10 text-zinc-500">
+                            {myTasks.length === 0
+                                ? "No tasks assigned to you yet."
+                                : "No tasks match your filters."}
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {recentTasks.map((task: any) => (
+                            {filteredTasks.map((task: any) => (
                                 <TaskCard
                                     key={task.id}
                                     title={task.title}
