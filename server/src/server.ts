@@ -15,6 +15,7 @@ import { initSocket } from './socket';
 dotenv.config();
 
 const app: Express = express();
+app.set('trust proxy', 1); // Trust first proxy (Render/Vercel)
 const httpServer = createServer(app);
 const port = process.env.PORT || 3000;
 
