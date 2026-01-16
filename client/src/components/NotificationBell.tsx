@@ -83,7 +83,7 @@ export default function NotificationBell() {
                                                 {notif.task.dueDate && (
                                                     <>
                                                         <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                                                        <span>Due {new Date(notif.task.dueDate).toLocaleDateString()}</span>
+                                                        <span>Due {new Date(notif.task.dueDate).toLocaleDateString('en-GB')}</span>
                                                     </>
                                                 )}
                                             </div>
