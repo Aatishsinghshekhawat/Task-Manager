@@ -16,6 +16,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
         token = req.cookies.jwt;
     }
 
+    // DEBUG: Log cookies and environment
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Cookies received:', req.cookies);
+    console.log('JWT Token:', token ? 'Token exists' : 'No token');
+
     if (!token) {
         res.status(401).json({ message: 'Not authorized, no token' });
         return;
