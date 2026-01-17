@@ -6,6 +6,7 @@ import api from '../utils/api';
 import Layout from '../components/Layout';
 import TaskCard from '../components/TaskCard';
 import CreateTaskModal from '../components/CreateTaskModal';
+import CustomSelect from '../components/CustomSelect';
 import { CheckCircle2, Clock, ListTodo, Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSocket } from '../hooks/useSocket';
@@ -175,55 +176,43 @@ export default function Dashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                             {/* Status Filter */}
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
-                                    Status
-                                </label>
-                                <select
-                                    value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                >
-                                    <option value="ALL">All Status</option>
-                                    <option value="TODO">To Do</option>
-                                    <option value="IN_PROGRESS">In Progress</option>
-                                    <option value="COMPLETED">Completed</option>
-                                </select>
-                            </div>
+                            <CustomSelect
+                                label="Status"
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                options={[
+                                    { value: 'ALL', label: 'All Status' },
+                                    { value: 'TODO', label: 'To Do' },
+                                    { value: 'IN_PROGRESS', label: 'In Progress' },
+                                    { value: 'COMPLETED', label: 'Completed' },
+                                ]}
+                            />
 
                             {/* Priority Filter */}
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
-                                    Priority
-                                </label>
-                                <select
-                                    value={priorityFilter}
-                                    onChange={(e) => setPriorityFilter(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                >
-                                    <option value="ALL">All Priorities</option>
-                                    <option value="LOW">Low</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HIGH">High</option>
-                                    <option value="URGENT">Urgent</option>
-                                </select>
-                            </div>
+                            <CustomSelect
+                                label="Priority"
+                                value={priorityFilter}
+                                onChange={setPriorityFilter}
+                                options={[
+                                    { value: 'ALL', label: 'All Priorities' },
+                                    { value: 'LOW', label: 'Low' },
+                                    { value: 'MEDIUM', label: 'Medium' },
+                                    { value: 'HIGH', label: 'High' },
+                                    { value: 'URGENT', label: 'Urgent' },
+                                ]}
+                            />
 
                             {/* Sort By */}
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
-                                    Sort By
-                                </label>
-                                <select
-                                    value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                >
-                                    <option value="NONE">Default</option>
-                                    <option value="DUE_DATE_ASC">Due Date (Earliest)</option>
-                                    <option value="DUE_DATE_DESC">Due Date (Latest)</option>
-                                </select>
-                            </div>
+                            <CustomSelect
+                                label="Sort By"
+                                value={sortBy}
+                                onChange={setSortBy}
+                                options={[
+                                    { value: 'NONE', label: 'Default' },
+                                    { value: 'DUE_DATE_ASC', label: 'Due Date (Earliest)' },
+                                    { value: 'DUE_DATE_DESC', label: 'Due Date (Latest)' },
+                                ]}
+                            />
                         </div>
 
                         {/* Clear Filters Button */}

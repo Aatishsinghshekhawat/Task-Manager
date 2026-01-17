@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import api from '../utils/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import CustomSelect from './CustomSelect';
 
 interface Task {
     id: string;
@@ -104,6 +105,12 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
 
     const loading = mutation.isPending;
 
+    // Prepare options for select boxes
+    const assignOptions = [
+        { value: '', label: 'Unassigned' },
+        ...users.map((user) => ({ value: user.id, label: user.name })),
+    ];
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
@@ -145,54 +152,35 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Priority
-                            </label>
-                            <select
-                                value={priority}
-                                onChange={(e) => setPriority(e.target.value)}
-                                className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            >
-                                <option value="LOW">Low</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="HIGH">High</option>
-                                <option value="URGENT">Urgent</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Status
-                            </label>
-                            <select
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value)}
-                                className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            >
-                                <option value="TODO">Todo</option>
-                                <option value="IN_PROGRESS">In Progress</option>
-                                <option value="COMPLETED">Completed</option>
-                            </select>
-                        </div>
+                        <CustomSelect
+                            label="Priority"
+                            value={priority}
+                            onChange={setPriority}
+                            options={[
+                                { value: 'LOW', label: 'Low' },
+                                { value: 'MEDIUM', label: 'Medium' },
+                                { value: 'HIGH', label: 'High' },
+                                { value: 'URGENT', label: 'Urgent' },
+                            ]}
+                        />
+                        <CustomSelect
+                            label="Status"
+                            value={status}
+                            onChange={setStatus}
+                            options={[
+                                { value: 'TODO', label: 'Todo' },
+                                { value: 'IN_PROGRESS', label: 'In Progress' },
+                                { value: 'COMPLETED', label: 'Completed' },
+                            ]}
+                        />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                            Assign To
-                        </label>
-                        <select
-                            value={assignedToId}
-                            onChange={(e) => setAssignedToId(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        >
-                            <option value="">Unassigned</option>
-                            {users.map((user) => (
-                                <option key={user.id} value={user.id}>
-                                    {user.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <CustomSelect
+                        label="Assign To"
+                        value={assignedToId}
+                        onChange={setAssignedToId}
+                        options={assignOptions}
+                    />
 
                     <div>
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -227,3 +215,4 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
         </div>
     );
 }
+
